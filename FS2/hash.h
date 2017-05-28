@@ -38,5 +38,5 @@ private:
 public:
 	Hash(unsigned N, fstream* hash);
 	~Hash();
-	unsigned Hashing(unsigned key);		// inset a record into the hash table and return a block number
+	unsigned Hashing(unsigned key, bool* update);	// inset a record into the hash table and return a block number
 };

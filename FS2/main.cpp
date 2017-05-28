@@ -2,9 +2,6 @@
 #include <sstream>
 #include "DB.h"
 
-using namespace std;
-
-
 void main() {
 	int recNum;	// number of records
 	string DataBase = "Students.DB";

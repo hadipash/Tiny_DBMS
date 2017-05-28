@@ -14,7 +14,7 @@ Hash::~Hash() {
 	delete table;
 }
 
-unsigned Hash::Hashing(unsigned key) {
+unsigned Hash::Hashing(unsigned key, bool* update) {
 	unsigned pref = 0;
 
 	for (unsigned d = minDepth; d <= i; d++) {
