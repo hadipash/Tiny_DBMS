@@ -15,10 +15,9 @@ private:
 public:
 	HashEntry()					{ alloc = false; recNumber = 0; depth = 1; }
 	void SetValue(unsigned b)	{ bNum = b; alloc = true; }
-	void SetAlloc(bool a)		{ alloc = a; }
 	void SetDepth(unsigned d)	{ depth = d; }
-	void IncreaseRecNum()		{ ++recNumber; }
 	void ResetRecNum()			{ recNumber = 0; }
+	unsigned GetRecNum()		{ return recNumber++; }
 	bool isAllocated()			{ return alloc; }
 	bool isFull()				{ return (recNumber == maxRecNum);  }
 	unsigned GetBlNum()			{ return bNum;	}
@@ -29,6 +28,7 @@ class Hash {
 private:
 	unsigned i;								// number of digits in a hash prefix (global depth)
 	unsigned numberOfBlocks;				// number of used blocks
+	unsigned maxNumberOfBlocks;				// maximum number of blocks
 	unsigned minDepth;						// minimum local depth
 	HashEntry* table;						// hash table
 	fstream* hashFile;						// the hash table file
@@ -38,5 +38,5 @@ private:
 public:
 	Hash(unsigned N, fstream* hash);
 	~Hash();
-	unsigned Hashing(unsigned key, bool* update);	// inset a record into the hash table and return a block number
+	unsigned Hashing(unsigned key, bool* update, unsigned* pos);	// inset a record into the hash table and return a block number
 };
