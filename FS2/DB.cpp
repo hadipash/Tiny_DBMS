@@ -3,9 +3,9 @@
 DB::DB(string db, string hashfile, string score, unsigned n) {
 	N = n;
 	this->db = db;
-	DataBase.open(db, ios_base::out | ios_base::binary);
-	HashFile.open(hashfile, ios_base::out | ios_base::binary);
-	ScoreTree.open(score, ios_base::out | ios_base::binary);
+	DataBase.open(db, ios_base::in | ios_base::out | ios_base::trunc | ios_base::binary);
+	HashFile.open(hashfile, ios_base::in | ios_base::out | ios_base::trunc | ios_base::binary);
+	ScoreTree.open(score, ios_base::in | ios_base::out | ios_base::trunc | ios_base::binary);
 
 	// Allocate DB file with initial two blocks
 	if (DataBase.is_open()) {
@@ -44,30 +44,25 @@ void DB::InsertRecord(unsigned ID, char name[20], float score, unsigned advID) {
 }
 
 void DB::Update(unsigned blockNum) {
-	DataBase.close();
 	Record* record = new Record[bf];
 
-	DataBase.open(db, ios_base::in | ios_base::binary);
-	if (DataBase.is_open()) {
-		DataBase.seekg(blockNum * bs);
+	DataBase.seekg(blockNum * bs);
 
-		// Read all records from an overflowed block
-		for (unsigned i = 0; i < bf; i++)
-			DataBase.read((char*)&record[i], sizeof(Record));
+	// Read all records from an overflowed block
+	for (unsigned i = 0; i < bf; i++)
+		DataBase.read((char*)&record[i], sizeof(Record));
 
-		DataBase.close();
-	}
+	// Erase values from an old block
+	DataBase.seekp(blockNum * bs);
+	DataBase.write("", bs);
 
-	DataBase.open(db, ios_base::app | ios_base::binary);
-	if (DataBase.is_open()) {
-		// Erase values from a block
-		DataBase.seekp(blockNum * bs);
-		DataBase.write("", bs);
+	// Allocate space for a new block
+	DataBase.seekp(0, ios_base::end);
+	DataBase.write("", bs);
 
-		// Insert records to new blocks
-		for (unsigned i = 0; i < bf; i++)
-			InsertRecord(record[i].ID, record[i].name, record[i].score, record[i].advID);
+	// Insert records to new blocks
+	for (unsigned i = 0; i < bf; i++)
+		InsertRecord(record[i].ID, record[i].name, record[i].score, record[i].advID);
 
-		// 혜인: Somehow update pointers in B+-tree. Feel free to change the algorithm :)
-	}
+	// 혜인: Somehow update pointers in B+-tree. Feel free to change the algorithm :)
 }
