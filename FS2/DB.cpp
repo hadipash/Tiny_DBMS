@@ -24,7 +24,7 @@ DB::~DB() {
 	delete hash;
 }
 
-void DB::InsertRecord(unsigned ID, char name[20], float score, unsigned advID) {
+void DB::InsertRecord(unsigned ID, string name, float score, unsigned advID) {
 	bool update = false;	// whether need to read and insert again records from an overflowed block or not
 	unsigned offset = 0;	// position of a recond in a block (to speed-up inserting)
 	unsigned blockNum = hash->Hashing(ID, &update, &offset);	// insert a key value into tha hash table and return a block number
