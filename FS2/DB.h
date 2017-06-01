@@ -17,9 +17,11 @@ struct Record {
 	}
 
 	// Constructor for reading records from a txt file
-	Record(unsigned stID, char* stName, float sc, unsigned aID)
+	Record(unsigned stID, string stName, float sc, unsigned aID)
 		: ID(stID), score(sc), advID(aID) {
-		strcpy_s(name, stName);
+		size_t length = stName.copy(name, 20);
+		if (length < 20)
+			name[length] = '\0';
 	}
 };
 
@@ -41,6 +43,6 @@ private:
 public:
 	DB(string db, string hashfile, string score, unsigned n);
 	~DB();
-	void InsertRecord(unsigned ID, char name[20], float score, unsigned advID);
+	void InsertRecord(unsigned ID, string name, float score, unsigned advID);
 	void Update(unsigned blockNum);
 };

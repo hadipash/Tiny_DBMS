@@ -13,9 +13,9 @@ void main() {
 	if (DataFile.is_open()) {
 		string line, temp; //strings for storing temporary values
 		unsigned studID, advID;
-		char studName[20];
+		string studName;
 		float score;
-		string Sname, SID, SaID, Sscore;	// temporary strings
+		string SID, SaID, Sscore;	// temporary strings
 
 		getline(DataFile, line);
 		recNum = stoi(line);
@@ -27,8 +27,7 @@ void main() {
 
 		//reading values line by line and insert them into DB
 		for (unsigned i = 0; i < recNum; i++) {
-			getline(ss, Sname, ',');
-			strcpy_s(studName, Sname.c_str());
+			getline(ss, studName, ',');
 			getline(ss, SID, ',');
 			studID = stoi(SID);
 			getline(ss, Sscore, ',');
