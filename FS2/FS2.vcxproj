@@ -139,11 +139,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="B+-tree.cpp" />
     <ClCompile Include="DB.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="B+-tree.h" />
     <ClInclude Include="DB.h" />
     <ClInclude Include="hash.h" />
   </ItemGroup>
