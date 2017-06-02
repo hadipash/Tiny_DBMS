@@ -1,6 +1,9 @@
+#include <iostream>
+#include <string>
+#include <bitset>
 #include "hash.h"
 
-Hash::Hash(unsigned N, fstream* hash) {
+Hash::Hash(unsigned N, string hash) {
 	i = 1;							// set initial prefix to 1
 	minDepth = 1;					// initial local minimal depth equals to 1
 	numberOfBlocks = 1;				// initially 2 blocks are allocated (start from 0)
@@ -10,10 +13,12 @@ Hash::Hash(unsigned N, fstream* hash) {
 	table[0].SetValue(0);			// initialize first two blocks
 	table[1].SetValue(1);
 
-	hashFile = hash;
+	hashFile.open(hash, ios_base::out | ios_base::binary);
 }
 
 Hash::~Hash() {
+	SaveIntoFile();
+	hashFile.close();
 	delete table;
 }
 
@@ -41,7 +46,7 @@ void Hash::Split(unsigned prefix, unsigned depth) {
 
 	// increase local depths
 	table[prefix].SetDepth(depth + 1);
-	table[newBlock].SetDepth(depth +1);
+	table[newBlock].SetDepth(depth + 1);
 
 	// Reset a number of records in blocks to zero
 	table[prefix].ResetRecNum();
@@ -61,4 +66,20 @@ void Hash::FindMinDepth() {
 	for (unsigned k = 1; k < maxNumberOfBlocks; k++)
 		if (table[k].isAllocated() && table[k].GetDepth() < minDepth)
 			minDepth = table[k].GetDepth();
+}
+
+void Hash::PrintTable() {
+	cout << "Hash table: " << endl << "Prefix\tBlock#" << endl;
+	for (unsigned j = 0; j < maxNumberOfBlocks; j++)
+		if (table[j].isAllocated()) {
+			unsigned m = table[j].GetDepth();
+			string prefix(bitset<32>(j).to_string(), 32 - m);
+			cout << prefix << "\t" << table[j].GetBlNum() << endl;
+		}
+}
+
+void Hash::SaveIntoFile() {
+	for (unsigned j = 0; j < maxNumberOfBlocks; j++)
+		if (table[j].isAllocated())
+			hashFile.write(reinterpret_cast<const char*>(&table[j]), sizeof(HashEntry));
 }

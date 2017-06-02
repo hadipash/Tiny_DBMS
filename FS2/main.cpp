@@ -43,6 +43,13 @@ void main() {
 		}
 
 		DataFile.close();
+
+		db->PrintHashTable();
+		cout << endl<< "Node of B+-tree to print out: ";
+		unsigned node;
+		cin >> node;
+		db->PrintKthTreeNode(node);
+
 		delete db;
 	}
 }

@@ -45,10 +45,13 @@ struct BpTreeNode {
 class BpTree {
 private:
 	BpTreeNode* root;
-	fstream* indexFile;
+	ofstream indexFile;
 	float splitNode(BpTreeNode* x, int i);
+	void SaveIntoFile();
 public:
-	BpTree(fstream* file);
+	BpTree(string file);
+	~BpTree();
 	void insert(float data, int bNum);
 	void update(float data, int oldBNum, int newBNum);
+	BpTreeNode* searchNode(int k);
 };
