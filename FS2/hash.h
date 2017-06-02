@@ -31,12 +31,14 @@ private:
 	unsigned maxNumberOfBlocks;				// maximum number of blocks
 	unsigned minDepth;						// minimum local depth
 	HashEntry* table;						// hash table
-	fstream* hashFile;						// the hash table file
+	ofstream hashFile;						// the hash table file
 	void FindMinDepth();					// find minimum local depth
 	void Split(unsigned prefix, unsigned depth);	// split blocks in the case of overflow
+	void SaveIntoFile();
 	
 public:
-	Hash(unsigned N, fstream* hash);
+	Hash(unsigned N, string hash);
 	~Hash();
 	unsigned Hashing(unsigned key, bool* update, unsigned* pos);	// inset a record into the hash table and return a block number
+	void PrintTable();
 };
