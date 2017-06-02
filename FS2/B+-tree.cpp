@@ -99,10 +99,27 @@ void BpTree::insert(float a, int b) {
 		splitNode(x, path);
 
 		// go through the path and insert data
-		x->key[x->count] = a;
-		x->bNum[x->count] = b;
-		x->sort();
-		x->count++;
+		x = root;
+		if (x->leaf) {
+			x->key[x->count] = a;
+			x->bNum[x->count] = b;
+			x->sort();
+			x->count++;
+		}
+		else {
+			while (!x->leaf) {
+				if (a < x->key[0])
+					x = x->sNode[0];
+
+				else
+					for (i = 0; i < x->count; i++) {
+						if ((a >= x->key[i]) && (a < x->key[i + 1])) {
+							x = x->sNode[i + 1];
+							break;
+						}
+					}
+			}
+		}
 	}	
 }
 
