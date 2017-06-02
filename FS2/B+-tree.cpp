@@ -119,6 +119,11 @@ void BpTree::insert(float a, int b) {
 						}
 					}
 			}
+
+			x->key[x->count] = a;
+			x->bNum[x->count] = b;
+			x->sort();
+			x->count++;
 		}
 	}	
 }
