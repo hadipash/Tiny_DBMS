@@ -1,8 +1,13 @@
 #include "B+-tree.h"
 
-BpTree::BpTree(fstream* file) {
+BpTree::BpTree(string file) {
 	root = NULL;
-	indexFile = file;
+	indexFile.open(file, ios_base::out | ios_base::binary);
+}
+
+BpTree::~BpTree() {
+	SaveIntoFile();
+	indexFile.close();
 }
 
 float BpTree::splitNode(BpTreeNode *x, int i)
@@ -187,4 +192,29 @@ void BpTree::update(float a, int oldBnum, int newBNum) {
 			}
 		}
 	}
+}
+
+BpTreeNode* BpTree::searchNode(int k) {
+	int i;
+	BpTreeNode *x = root;
+
+	// find fisrt leaf node
+	while (!x->leaf) {
+		x->sNode[0];
+	}
+
+	// move to k-th leaf node
+	for (i = 0; i < k; i++) {
+		x = x->p;
+	}
+
+	cout << "Number Of " << k << "th node entries:" << x->count << endl;
+	for (i = 0; i <= x->count; i++) {
+		cout << "Key: " << x->key[i] << "\tValue: " << x->bNum[i] << endl;
+	}
+
+	return x;
+}
+
+void BpTree::SaveIntoFile() {
 }
