@@ -139,7 +139,7 @@ void BpTree::insert(float a, int b) {
 		else {		// innernode
 			while (!x->leaf) {						// find leafnode
 				for (i = 0; i < (x->count); i++) {
-					if ((a > x->key[i]) && (a < x->key[i + 1])) {
+					if ((a >= x->key[i]) && (a < x->key[i + 1])) {
 						i++;
 						break;
 					}
