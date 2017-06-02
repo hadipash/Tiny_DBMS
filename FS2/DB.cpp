@@ -44,17 +44,17 @@ void DB::InsertRecord(unsigned ID, string name, float score, unsigned advID) {
 	}
 }
 
-void DB::Update(unsigned blockNum) {
+void DB::Update(unsigned oldBlockNum) {
 	Record* record = new Record[bf];
 
-	DataBase.seekg(blockNum * bs);
+	DataBase.seekg(oldBlockNum * bs);
 
 	// Read all records from an overflowed block
 	for (unsigned i = 0; i < bf; i++)
 		DataBase.read((char*)&record[i], sizeof(Record));
 
 	// Erase values from an old block
-	DataBase.seekp(blockNum * bs);
+	DataBase.seekp(oldBlockNum * bs);
 	DataBase.write("", bs);
 
 	// Allocate space for a new block
@@ -62,8 +62,24 @@ void DB::Update(unsigned blockNum) {
 	DataBase.write("", bs);
 
 	// Insert records to new blocks
-	for (unsigned i = 0; i < bf; i++)
-		InsertRecord(record[i].ID, record[i].name, record[i].score, record[i].advID);
+	for (unsigned i = 0; i < bf; i++) {
+		bool update = false;	// whether need to read and insert again records from an overflowed block or not
+		unsigned offset = 0;	// position of a recond in a block (to speed-up inserting)
+		unsigned blockNum = hash->Hashing(record[i].ID, &update, &offset);	// insert a key value into tha hash table and return a block number
 
-	// 혜인: Somehow update pointers in B+-tree. Feel free to change the algorithm :)
+		if (update) {
+			Update(blockNum);						// Re-insert records from an overflowed block
+			InsertRecord(record[i].ID, record[i].name, record[i].score, record[i].advID);	// Insert a new record
+		}
+		else {
+			// Then, insert new value to the B+-tree with known block number
+			indexTree->update(record[i].score, oldBlockNum, blockNum);
+
+			// Insert a record into DB file
+			Record record(record[i].ID, record[i].name, record[i].score, record[i].advID);
+			cout << "Updating " << record.ID << " from " << oldBlockNum << " block" << " into " << blockNum << " block" << endl;
+			DataBase.seekp(blockNum * bs + offset * sizeof(Record));
+			DataBase.write(reinterpret_cast<const char*>(&record), sizeof(Record));
+		}
+	}
 }

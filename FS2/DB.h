@@ -46,5 +46,5 @@ public:
 	DB(string db, string hashfile, string score, unsigned n);
 	~DB();
 	void InsertRecord(unsigned ID, string name, float score, unsigned advID);
-	void Update(unsigned blockNum);
+	void Update(unsigned oldBlockNum);
 };
