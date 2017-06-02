@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <fstream>
-#include <vector>
+#include <map>
 using namespace std;
 
 const unsigned maxNum = (4096 / 8) - 2;
@@ -9,21 +9,30 @@ const unsigned minNum = maxNum / 2;
 
 struct BpTreeNode {
 	int count;
-	bool leaf;
-	union {
-		BpTreeNode **sNode;			// pointer to node for smaller value (compared to each entry)
-		int *bNum;					// block number
-	};
+	bool leaf;	
+	BpTreeNode **sNode;			// pointer to node for smaller value (compared to each entry)
+	int *bNum;					// block number
 	float *key;
-	BpTreeNode *p;					//pointer to node for larger value (compared to every key value in node)
+	BpTreeNode *nextNode;
+	BpTreeNode *ptr;
 
 	BpTreeNode() {
+		int i;
 		count = 0;
 		leaf = true;
 		bNum = new int[maxNum];
 		key = new float[maxNum];
+		ptr = NULL;
+		sNode = new BpTreeNode*[maxNum];
+
+		for (i = 0; i < maxNum; i++) {
+			sNode[i] = NULL;
+		}
 	}
 	~BpTreeNode() { delete bNum; delete key; }
+	BpTreeNode* copy(BpTreeNode* x) {
+
+	}
 	void sort() {
 		int i, j, bTemp;
 		float kTemp;
@@ -33,7 +42,7 @@ struct BpTreeNode {
 					kTemp = key[i];
 					bTemp = bNum[i];
 					key[i] = key[j];
-					bNum[i] = bNum[i];
+					bNum[i] = bNum[j];
 					key[j] = kTemp;
 					bNum[j] = bTemp;
 				}
