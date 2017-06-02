@@ -22,6 +22,7 @@ struct BpTreeNode {
 		leaf = true;
 		bNum = new int[maxNum];
 		key = new float[maxNum];
+		p = NULL;
 	}
 	~BpTreeNode() { delete bNum; delete key; }
 	void sort() {
@@ -47,7 +48,7 @@ private:
 	BpTreeNode* root;
 	ofstream indexFile;
 	float splitNode(BpTreeNode* x, int i);
-	void SaveIntoFile();
+	void SaveIntoFile(BpTreeNode* root);
 public:
 	BpTree(string file);
 	~BpTree();
