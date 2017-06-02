@@ -9,53 +9,95 @@ float BpTree::splitNode(BpTreeNode *x, int i)
 {
 	int j, middleBNum;
 	float middleKey;
-	BpTreeNode *nParentNode, *nLeafNode, *leaf;
+	BpTreeNode *nParentNode, *nChildNode, *child, *middleSNode;
 
-	nLeafNode = new BpTreeNode;					// new leaf node
+	nChildNode = new BpTreeNode;					// new leaf node
 
 	if (i == -1) {								// if root node is full
 		nParentNode = new BpTreeNode;			// new parent node
-		nParentNode->setInnerNode();
+		nParentNode->leaf = false;
 		middleKey = x->key[minNum];				// middle value will be stored in parent's node
-		middleBNum = x->bNum[minNum];
-		x->key[minNum] = 0;						// remove value (set to initial value)
-		x->bNum[minNum] = -1;
-		x->count--;
 
-		// set newly created node value & remove original node value
-		for (j = minNum + 1; j < maxNum; j++) {
-			nLeafNode->key[j - (minNum + 1)] = x->key[j];
-			nLeafNode->bNum[j - (minNum + 1)] = x->bNum[j];
-			nLeafNode->count++;
+		if (x->leaf) {								//root && leaf
+			middleBNum = x->bNum[minNum];
+			x->key[minNum] = 0;						// remove value (set to initial value)
+			x->bNum[minNum] = -1;
 			x->count--;
+
+			// set newly created node value & remove original node value
+			for (j = minNum + 1; j < maxNum; j++) {
+				nChildNode->key[j - (minNum + 1)] = x->key[j];
+				nChildNode->bNum[j - (minNum + 1)] = x->bNum[j];
+				nChildNode->count++;
+				x->count--;
+			}
+		}
+		else {										// root && nonleaf
+			nChildNode->leaf = false;
+			middleSNode = x->sNode[minNum];
+			x->key[minNum] = 0;						// remove value (set to initial value)
+			x->sNode[minNum + 1] = NULL;
+			x->count--;
+
+			// set newly created node value & remove original node value
+			for (j = minNum + 1; j < maxNum; j++) {
+				nChildNode->key[j - (minNum + 1)] = x->key[j];
+				nChildNode->sNode[j - (minNum + 1)] = x->sNode[j];
+				nChildNode->count++;
+				x->count--;
+			}
 		}
 
-		nParentNode->key[0] = middleKey;
-		nParentNode->bNum[0] = middleBNum;
-		nParentNode->sNode[0] = x;
-		nParentNode->sNode[1] = nLeafNode;
-		nParentNode->count++;
-		root = nParentNode;
+			nParentNode->key[0] = middleKey;
+			nParentNode->sNode[0] = x;
+			nParentNode->sNode[1] = nChildNode;
+			nParentNode->count++;
+			nChildNode->p = x->p;
+			x->p = nChildNode;
+			root = nParentNode;
 	}
 	else {										// if x's child node is full
-		leaf = x->sNode[i];
-		middleKey = leaf->key[minNum];
-		leaf->key[minNum] = 0;
-		leaf->bNum[minNum] = -1;
-		leaf->count--;
+		child = x->sNode[i];
 
-		for (j = (minNum + 1); j < maxNum; j++) {
-			nLeafNode->key[j - (minNum + 1)] = leaf->key[j];
-			nLeafNode->bNum[j - (minNum + 1)] = leaf->bNum[j];
-			nLeafNode->count++;
-			leaf->key[j] = 0;
-			leaf->bNum[j] = -1;
-			leaf->count--;
+		if (child->leaf) {						// nonroot && leaf
+			middleKey = child->key[minNum];
+
+			child->key[minNum] = 0;
+			child->bNum[minNum] = -1;
+			child->count--;
+
+			for (j = (minNum + 1); j < maxNum; j++) {
+				nChildNode->key[j - (minNum + 1)] = child->key[j];
+				nChildNode->bNum[j - (minNum + 1)] = child->bNum[j];
+				nChildNode->count++;
+				child->key[j] = 0;
+				child->bNum[j] = -1;
+				child->count--;
+			}
+
+			nChildNode->p = child->p;
+			child->p = nChildNode;
+		}
+		else {									// nonroot && inner
+			child->key[minNum] = 0;
+			child->sNode[minNum] = NULL;
+			child->count--;
+
+			for (j = (minNum + 1); j < maxNum; j++) {
+				nChildNode->key[j - (minNum + 1)] = child->key[j];
+				nChildNode->sNode[j - (minNum + 1)] = child->sNode[j];
+				nChildNode->count++;
+				child->key[j] = 0;
+				child->sNode[j] = NULL;
+				child->count--;
+			}
 		}
 
-		x->setInnerNode();
-		x->sNode[i] = leaf;
-		x->sNode[i + 1] = nLeafNode;
+		nChildNode->p = child->p;
+		child->p = nChildNode;
+		x->leaf = false;
+		x->sNode[i] = child;
+		x->sNode[i + 1] = nChildNode;
 		x->count = x->count - maxNum;
 	}
 	return middleKey;
@@ -76,11 +118,11 @@ void BpTree::insert(float a, int b) {
 		x->count++;
 	}
 	else {
-		if (x->isLeaf() == true && (x->count % maxNum) == 0) {	// leafnode overhead
+		if (x->leaf == true && x->count == maxNum) {	// leafnode overhead
 			temp = splitNode(x, -1);
 			x = root;
 			for (i = 0; i < (x->count); i++) {
-				if ((a > x->key[i]) && (a < x->key[i + 1])) {
+				if ((a >= x->key[i]) && (a < x->key[i + 1])) {
 					i++;
 					break;
 				}
@@ -90,7 +132,7 @@ void BpTree::insert(float a, int b) {
 			x = x->sNode[i];
 		}
 		else {		// innernode
-			while (x->isLeaf() == false) {						// find leafnode
+			while (!x->leaf) {						// find leafnode
 				for (i = 0; i < (x->count); i++) {
 					if ((a > x->key[i]) && (a < x->key[i + 1])) {
 						i++;
@@ -100,7 +142,7 @@ void BpTree::insert(float a, int b) {
 						break;
 				}
 
-				if ((x->sNode[i]->count % maxNum) == 0) {		// innernode overhead
+				if (x->sNode[i]->count == maxNum) {		// innernode overhead
 					temp = splitNode(x, i);
 					x->key[x->count] = temp;
 					x->count++;
@@ -117,4 +159,32 @@ void BpTree::insert(float a, int b) {
 	x->bNum[x->count] = b;
 	x->sort();
 	x->count++;
+}
+
+void BpTree::update(float a, int oldBnum, int newBNum) {
+	int i;
+	BpTreeNode* x = root;
+
+	if (x == NULL)
+		return;
+	else {
+		while (x->leaf == false) {						// find leafnode
+			for (i = 0; i < (x->count); i++) {
+				if ((a >= x->key[i]) && (a < x->key[i + 1])) {
+					i++;
+					break;
+				}
+				else if (a < x->key[0])
+					break;
+			}
+				x = x->sNode[i];
+		}
+
+		for (i = 0; i < x->count; i++) {
+			if ((a == x->key[i]) && (oldBnum == x->bNum[i])) {
+				x->bNum[i] = newBNum;
+				break;
+			}
+		}
+	}
 }

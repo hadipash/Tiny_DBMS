@@ -4,27 +4,26 @@
 #include <vector>
 using namespace std;
 
-const unsigned maxNum = (4096 / 8) - 1;
+const unsigned maxNum = (4096 / 8) - 2;
 const unsigned minNum = maxNum / 2;
 
 struct BpTreeNode {
 	int count;
+	bool leaf;
 	union {
-		BpTreeNode **sNode;
-		int *bNum;
+		BpTreeNode **sNode;			// pointer to node for smaller value (compared to each entry)
+		int *bNum;					// block number
 	};
 	float *key;
-	BpTreeNode *p;
+	BpTreeNode *p;					//pointer to node for larger value (compared to every key value in node)
 
 	BpTreeNode() {
-		count = maxNum; // default: leaf node
+		count = 0;
+		leaf = true;
 		bNum = new int[maxNum];
 		key = new float[maxNum];
 	}
 	~BpTreeNode() { delete bNum; delete key; }
-	bool isLeaf() { return (count / (maxNum + 1) == 1) ? true : false; } // leaf node's count value is bigger than maxNum
-	bool isFull() { return (count == maxNum) ? true : false; }
-	void setInnerNode() { if (count / (maxNum + 1) == 1) count = count - maxNum; } // inner node's count value is smaller than or equal to maxNum
 	void sort() {
 		int i, j, bTemp;
 		float kTemp;
@@ -45,10 +44,11 @@ struct BpTreeNode {
 
 class BpTree {
 private:
-	BpTreeNode *root;
+	BpTreeNode* root;
 	fstream* indexFile;
-	float splitNode(BpTreeNode *x, int i);
+	float splitNode(BpTreeNode* x, int i);
 public:
 	BpTree(fstream* file);
-	void insert(float a, int b);
+	void insert(float data, int bNum);
+	void update(float data, int oldBNum, int newBNum);
 };
