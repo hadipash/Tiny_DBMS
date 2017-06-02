@@ -28,16 +28,10 @@ struct Record {
 
 class DB {
 private:
-	// database files
 	fstream DataBase;
-	fstream HashFile;
-	fstream ScoreTree;
-
-	string db;
 
 	unsigned const bs = 4096;					// size of a block in bytes
 	unsigned const bf = bs / sizeof(Record);	// blocking factor
-	unsigned N;									// Number of records to insert
 
 	Hash* hash;	// Hash function
 	BpTree* indexTree;
@@ -47,4 +41,6 @@ public:
 	~DB();
 	void InsertRecord(unsigned ID, string name, float score, unsigned advID);
 	void Update(unsigned oldBlockNum);
+	void PrintHashTable();
+	void PrintKthTreeNode(unsigned k);
 };
