@@ -1,4 +1,4 @@
-#include "DB.h"
+﻿#include "DB.h"
 
 DB::DB(string db, string hashfile, string score, unsigned n) {
 	DataBase.open(db, ios_base::in | ios_base::out | ios_base::trunc | ios_base::binary);

@@ -6,7 +6,7 @@ BpTree::BpTree(string file) {
 }
 
 BpTree::~BpTree() {
-	SaveIntoFile();
+	SaveIntoFile(root);
 	indexFile.close();
 }
 
@@ -229,22 +229,30 @@ BpTreeNode* BpTree::searchNode(int k) {
 	}
 
 	// move to k-th leaf node
-	for (i = 0; i < k; i++) {
+	for (i = 0; i < k; i++)
 		x = x->p;
-	}
 
 	cout << "Number Of " << k << "th node entries:" << x->count << endl;
-	for (i = 0; i <= x->count; i++) {
+	for (i = 0; i < x->count; i++) {
 		cout << "Key: " << x->key[i] << "\tValue: " << x->bNum[i] << endl;
 	}
 
 	return x;
 }
 
-void BpTree::SaveIntoFile() {
-	BpTreeNode* x = root;
-	int i;
+void BpTree::SaveIntoFile(BpTreeNode* x) {
+	if (x != NULL) {
+		for (int i = 0; i < maxNum; i++)
+			indexFile << x->key << x->bNum;
+		indexFile << x->p;
 
-	for (i = 0; i < x->count; i++)
-		indexFile << x->key << x->bNum;
+		if (!(x->leaf)) {
+			for (int i = 0; i < root->count; i++)
+				if (x->sNode[i])
+					SaveIntoFile(x->sNode[i]);
+
+			if(x->p)
+				SaveIntoFile(x->p);
+		}
+	}
 }

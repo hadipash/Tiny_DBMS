@@ -56,7 +56,7 @@ private:
 	BpTreeNode* root;
 	ofstream indexFile;
 	float splitNode(BpTreeNode* x, int i);
-	void SaveIntoFile();
+	void SaveIntoFile(BpTreeNode* root);
 public:
 	BpTree(string file);
 	~BpTree();
