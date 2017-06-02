@@ -199,14 +199,12 @@ BpTreeNode* BpTree::searchNode(int k) {
 	BpTreeNode *x = root;
 
 	// find fisrt leaf node
-	while (!x->leaf) {
-		x->sNode[0];
-	}
+	while (!(x->leaf))
+		x = x->sNode[0];
 
 	// move to k-th leaf node
-	for (i = 0; i < k; i++) {
+	for (i = 0; i < k; i++)
 		x = x->p;
-	}
 
 	cout << "Number Of " << k << "th node entries:" << x->count << endl;
 	for (i = 0; i <= x->count; i++) {
