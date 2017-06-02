@@ -14,6 +14,7 @@ DB::DB(string db, string hashfile, string score, unsigned n) {
 	}
 	
 	hash = new Hash(N/bf * 3, &HashFile); // Suppose that the most worst utilization of block is 1/3
+	indexTree = new BpTree(&ScoreTree);
 }
 
 DB::~DB() {
@@ -22,6 +23,7 @@ DB::~DB() {
 	ScoreTree.close();
 
 	delete hash;
+	delete indexTree;
 }
 
 void DB::InsertRecord(unsigned ID, string name, float score, unsigned advID) {
