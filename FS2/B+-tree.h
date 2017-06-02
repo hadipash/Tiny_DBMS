@@ -13,8 +13,7 @@ struct BpTreeNode {
 	BpTreeNode **sNode;			// pointer to node for smaller value (compared to each entry)
 	int *bNum;					// block number
 	float *key;
-	BpTreeNode *nextNode;
-	BpTreeNode *ptr;
+	BpTreeNode *next;
 
 	BpTreeNode() {
 		int i;
@@ -22,17 +21,15 @@ struct BpTreeNode {
 		leaf = true;
 		bNum = new int[maxNum];
 		key = new float[maxNum];
-		ptr = NULL;
-		sNode = new BpTreeNode*[maxNum];
+		next = NULL;
+		sNode = new BpTreeNode*[maxNum + 1];
 
 		for (i = 0; i < maxNum; i++) {
 			sNode[i] = NULL;
 		}
 	}
 	~BpTreeNode() { delete bNum; delete key; }
-	BpTreeNode* copy(BpTreeNode* x) {
-
-	}
+	
 	void sort() {
 		int i, j, bTemp;
 		float kTemp;
@@ -55,12 +52,14 @@ class BpTree {
 private:
 	BpTreeNode* root;
 	ofstream indexFile;
-	float splitNode(BpTreeNode* x, int i);
+	float splitNode(BpTreeNode* x, int* path);
 	void SaveIntoFile(BpTreeNode* root);
+	BpTreeNode* copyHalfNode(BpTreeNode*x, int flag);
 public:
 	BpTree(string file);
 	~BpTree();
 	void insert(float data, int bNum);
 	void update(float data, int oldBNum, int newBNum);
 	BpTreeNode* searchNode(int k);
+	int* findPath(BpTreeNode* x, float a);
 };
