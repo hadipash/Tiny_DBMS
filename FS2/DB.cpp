@@ -1,11 +1,7 @@
-﻿#include "DB.h"
+#include "DB.h"
 
 DB::DB(string db, string hashfile, string score, unsigned n) {
-	N = n;
-	this->db = db;
 	DataBase.open(db, ios_base::in | ios_base::out | ios_base::trunc | ios_base::binary);
-	HashFile.open(hashfile, ios_base::in | ios_base::out | ios_base::trunc | ios_base::binary);
-	ScoreTree.open(score, ios_base::in | ios_base::out | ios_base::trunc | ios_base::binary);
 
 	// Allocate DB file with initial two blocks
 	if (DataBase.is_open()) {
@@ -13,14 +9,12 @@ DB::DB(string db, string hashfile, string score, unsigned n) {
 		DataBase.write("", 1);
 	}
 	
-	hash = new Hash(N/bf * 3, &HashFile); // Suppose that the most worst utilization of block is 1/3
-	indexTree = new BpTree(&ScoreTree);
+	hash = new Hash(n/bf * 3, hashfile); // Suppose that the most worst utilization of block is 1/3
+	indexTree = new BpTree(score);
 }
 
 DB::~DB() {
 	DataBase.close();
-	HashFile.close();
-	ScoreTree.close();
 
 	delete hash;
 	delete indexTree;
@@ -40,7 +34,7 @@ void DB::InsertRecord(unsigned ID, string name, float score, unsigned advID) {
 
 		// Insert a record into DB file
 		Record record(ID, name, score, advID);
-		cout << "Inserting " << record.ID << " into " << blockNum << " block" << endl;
+		//cout << "Inserting " << record.ID << " into " << blockNum << " block" << endl;
 		DataBase.seekp(blockNum * bs + offset * sizeof(Record));
 		DataBase.write(reinterpret_cast<const char*>(&record), sizeof(Record));
 	}
@@ -79,9 +73,17 @@ void DB::Update(unsigned oldBlockNum) {
 
 			// Insert a record into DB file
 			Record record(record[i].ID, record[i].name, record[i].score, record[i].advID);
-			cout << "Updating " << record.ID << " from " << oldBlockNum << " block" << " into " << blockNum << " block" << endl;
+			//cout << "Updating " << record.ID << " from " << oldBlockNum << " block" << " into " << blockNum << " block" << endl;
 			DataBase.seekp(blockNum * bs + offset * sizeof(Record));
 			DataBase.write(reinterpret_cast<const char*>(&record), sizeof(Record));
 		}
 	}
+}
+
+void DB::PrintHashTable() {
+	hash->PrintTable();
+}
+
+void DB::PrintKthTreeNode(unsigned k) {
+	indexTree->searchNode(k);
 }
