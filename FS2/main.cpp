@@ -25,7 +25,7 @@ void main() {
 		getline(DataFile, line);
 		stringstream ss(line);
 
-		//reading values line by line and insert them into DB
+		// reading values line by line and insert them into DB
 		for (unsigned i = 0; i < recNum; i++) {
 			getline(ss, studName, ',');
 			getline(ss, SID, ',');
@@ -41,7 +41,6 @@ void main() {
 			ss.clear();
 			ss << line;
 		}
-
 		DataFile.close();
 
 		db->PrintHashTable();

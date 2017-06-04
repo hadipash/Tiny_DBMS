@@ -4,37 +4,39 @@
 #include <map>
 using namespace std;
 
-const unsigned maxNum = (4096 / 8) - 2;
+const unsigned maxNum = (4096 / 16) - 2;
 const unsigned minNum = maxNum / 2;
 
 struct BpTreeNode {
 	int count;
 	bool leaf;	
-	BpTreeNode **sNode;			// pointer to node for smaller value (compared to each entry)
-	int *bNum;					// block number
-	float *key;
-	BpTreeNode *next;
+	BpTreeNode *sNode[maxNum + 1];			// pointer to node for smaller value (compared to each entry)
+	int bNum[maxNum];					// block number
+	double key[maxNum];
+	BpTreeNode* next;
 
 	BpTreeNode() {
 		int i;
 		count = 0;
 		leaf = true;
-		bNum = new int[maxNum];
-		key = new float[maxNum];
 		next = NULL;
-		sNode = new BpTreeNode*[maxNum + 1];
-
+		sNode[maxNum + 1] = NULL;
 		for (i = 0; i < maxNum; i++) {
 			sNode[i] = NULL;
+			key[i] = 0;
+			bNum[i] = -1;
 		}
 	}
-	~BpTreeNode() { delete bNum; delete key; }
+	~BpTreeNode() { 
+		delete bNum;
+		delete key;
+	}
 	
 	void sort() {
 		int i, j, bTemp;
-		float kTemp;
+		double kTemp;
 		for (i = 0; i < count; i++) {
-			for (j = i; j <= count; j++) {
+			for (j = i; j < count + 1; j++) {
 				if (key[i] > key[j]) {
 					kTemp = key[i];
 					bTemp = bNum[i];
@@ -52,14 +54,16 @@ class BpTree {
 private:
 	BpTreeNode* root;
 	ofstream indexFile;
-	float splitNode(BpTreeNode* x, int* path);
+	int depth;
+	int path[4];
+	void arrangePath(BpTreeNode* x);
 	void SaveIntoFile(BpTreeNode* root);
-	BpTreeNode* copyHalfNode(BpTreeNode*x, int flag);
+	void spiltNode(BpTreeNode*x, BpTreeNode* y);
+	void findPath(BpTreeNode* x, double a);
 public:
 	BpTree(string file);
 	~BpTree();
-	void insert(float data, int bNum);
-	void update(float data, int oldBNum, int newBNum);
+	void insert(double data, int bNum);
+	void update(double data, int oldBNum, int newBNum);
 	BpTreeNode* searchNode(int k);
-	int* findPath(BpTreeNode* x, float a);
 };

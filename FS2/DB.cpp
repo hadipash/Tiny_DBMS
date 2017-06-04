@@ -34,7 +34,7 @@ void DB::InsertRecord(unsigned ID, string name, float score, unsigned advID) {
 
 		// Insert a record into DB file
 		Record record(ID, name, score, advID);
-		//cout << "Inserting " << record.ID << " into " << blockNum << " block" << endl;
+		cout << "Inserting " << record.ID << " into " << blockNum << " block" << endl;
 		DataBase.seekp(blockNum * bs + offset * sizeof(Record));
 		DataBase.write(reinterpret_cast<const char*>(&record), sizeof(Record));
 	}
@@ -73,7 +73,7 @@ void DB::Update(unsigned oldBlockNum) {
 
 			// Insert a record into DB file
 			Record record(record[i].ID, record[i].name, record[i].score, record[i].advID);
-			//cout << "Updating " << record.ID << " from " << oldBlockNum << " block" << " into " << blockNum << " block" << endl;
+			cout << "Updating " << record.ID << " from " << oldBlockNum << " block" << " into " << blockNum << " block" << endl;
 			DataBase.seekp(blockNum * bs + offset * sizeof(Record));
 			DataBase.write(reinterpret_cast<const char*>(&record), sizeof(Record));
 		}

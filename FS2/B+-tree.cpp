@@ -2,6 +2,7 @@
 
 BpTree::BpTree(string file) {
 	root = NULL;
+	depth = 0;
 	indexFile.open(file, ios_base::out | ios_base::binary);
 }
 
@@ -10,22 +11,20 @@ BpTree::~BpTree() {
 	indexFile.close();
 }
 
-float BpTree::splitNode(BpTreeNode* x, int* path)
+void BpTree::arrangePath(BpTreeNode* x)
 {
 	int i, j, middleBNum;
-	float middleKey;
+	double middleKey;
 	BpTreeNode *nParent, *nChild;
-	int num = sizeof(path) / sizeof(int);
 
-	i = 0;
-	middleKey = x->key[minNum];
-	middleBNum = x->bNum[minNum];
-	while (num - i != 0) {
-		if (i == 0 && x->count == maxNum) {
-			nParent = new BpTreeNode();
-			nChild = copyHalfNode(x, 1);
-			x = copyHalfNode(x, 0);
-			x->count = maxNum;
+	i = -1;
+	while (depth != i) {
+		if (i == - 1 && x->count == maxNum) { // root node is NULL;
+			middleKey = x->key[minNum];
+			middleBNum = x->bNum[minNum];
+			nChild = new BpTreeNode;
+			nParent = new BpTreeNode;
+			spiltNode(x, nChild);
 
 			nParent->leaf = false;
 			nParent->key[0] = middleKey;
@@ -33,66 +32,61 @@ float BpTree::splitNode(BpTreeNode* x, int* path)
 			nParent->sNode[0] = x;
 			nParent->sNode[1] = nChild;
 			nParent->count++;
-			nChild->next = x;
-		}
-		else if (i != num && x->count == maxNum) {
-			nChild = copyHalfNode(x, 1);
-			x = copyHalfNode(x, 0);
 
-			nParent = x;
+			root = nParent;
+			depth++;
+		}
+		else if (i != - 1 && x->count == maxNum) {
+			middleKey = x->key[minNum];
+			middleBNum = x->bNum[minNum];
+			nChild = new BpTreeNode;
+			spiltNode(x, nChild);
+			
+			nParent = root;
 			for (j = 0; j < i; j++) {
-				nParent = nParent->sNode[path[j + 1]];			
+				nParent = nParent->sNode[path[j]];			
 			}
-			for (j = nParent->count; j > i; j--) {
+
+			for (j = nParent->count; j > path[i] + 1; j--) {
 				nParent->key[j] = nParent->key[j - 1];
 				nParent->bNum[j] = nParent->bNum[j - 1];
-				nParent->sNode[j] = nParent->sNode[j - 1];
+				nParent->sNode[j + 1] = nParent->sNode[j];
+				nParent->sNode[j + 1] = nParent->sNode[j - 1];
 			}
 			nParent->leaf = false;
-			nParent->key[i] = middleKey;
-			nParent->bNum[i] = middleBNum;
-			nParent->sNode[i] = x;
-			nParent->sNode[i + 1] = nChild;
-			nChild->next = x->next;
-			x->next = nChild;
-			nParent->count++;		
+			nParent->key[path[i]] = middleKey;
+			nParent->bNum[path[i]] = middleBNum;
+			nParent->sNode[path[i]] = x;
+			nParent->sNode[path[i] + 1] = nChild;
+			nParent->count++;
 		}
 		i++;
-		x = x->sNode[path[i]];
+		if (path[i] != -1)
+				x = x->sNode[path[i]];
 	}
-
-	return middleKey;
 }
 
-BpTreeNode* BpTree::copyHalfNode(BpTreeNode*x, int flag) {
+void BpTree::spiltNode(BpTreeNode*x, BpTreeNode* y) {
 	int i;
-	BpTreeNode* newNode = new BpTreeNode;
 	
-	newNode->leaf = x->leaf;
-	newNode->next = x->next;
-	if (flag == 0) {
-		for (i = 0; i < minNum; i++) {
-			newNode->key[i] = x->key[i];
-			newNode->bNum[i] = x->bNum[i];
-			newNode->sNode[i] = x->sNode[i];
-			newNode->count = minNum;
-		}
+	y->leaf = x->leaf;
+	y->next = x->next;
+	for (i = minNum; i < maxNum; i++) {
+			y->key[i - minNum] = x->key[i];
+			y->bNum[i - minNum] = x->bNum[i];
+			y->sNode[i - minNum] = x->sNode[i];
+			x->key[i] = 0;
+			x->bNum[i] = -1;
+			x->sNode[i] = NULL;
+			x->count--;
+			y->count++;
 	}
-	else {
-		for (i = maxNum; i >= minNum; i--) {
-			newNode->key[maxNum - i] = x->key[i];
-			newNode->bNum[maxNum - i] = x->bNum[i];
-			newNode->sNode[maxNum - i] = x->sNode[i];
-			newNode->count = maxNum - minNum;
-		}
-	}
-
-	return newNode;
+	x->next = y;
 }
 
-void BpTree::insert(float a, int b) {
-	int i, j = 0, *path;
-	BpTreeNode *x;
+void BpTree::insert(double a, int b) {
+	int i, j = 0;
+	BpTreeNode* x;
 
 	x = root;
 	if (x == NULL) {
@@ -103,11 +97,15 @@ void BpTree::insert(float a, int b) {
 		root = x;
 	}
 	else {
+		for (i = 0; i < 4; i++) {
+			path[i] = -1;
+		}
+
 		// find path to insert
-		path = findPath(x, a);
+		findPath(x, a);
 
 		// split nodes in path
-		splitNode(x, path);
+		arrangePath(x);
 
 		// go through the path and insert data
 		x = root;
@@ -121,40 +119,39 @@ void BpTree::insert(float a, int b) {
 			while (!x->leaf) {
 				if (a < x->key[0])
 					x = x->sNode[0];
-
-				else
-					for (i = 0; i < x->count; i++) {
+				else if (a >= x->key[x->count - 1])
+					x = x->sNode[x->count];
+				else 
+					for (i = 0; i < x->count - 1; i++) 
 						if ((a >= x->key[i]) && (a < x->key[i + 1])) {
+							path[j++] = i + 1;
 							x = x->sNode[i + 1];
 							break;
 						}
-					}
 			}
-
 			x->key[x->count] = a;
 			x->bNum[x->count] = b;
 			x->sort();
 			x->count++;
 		}
-
-	}	
+	}
 }
 
-int* BpTree::findPath(BpTreeNode* x, float a) {
-	int i, j, path[4];
-	j = 0;
-	path[j++] = 0;
-	while (!x->leaf) {
+void BpTree::findPath(BpTreeNode* x, double a) {
+	int i, j = 0, k = 0;
+	
+	while (k != depth) {
 		if (a < x->key[0]) {
 			path[j++] = 0;
 			x = x->sNode[0];
 		}
-		else if (a >= x->key[x->count]) {
-			x = x->sNode[x->count + 1];
-			path[j++] = x->count + 1;
+		else if (a >= x->key[x->count - 1]) {
+			path[j++] = x->count;
+			x = x->sNode[x->count];
+			
 		}
 		else {
-			for (i = 0; i < x->count; i++) {
+			for (i = 0; i < x->count - 1; i++) {
 				if ((a >= x->key[i]) && (a < x->key[i + 1])) {
 					path[j++] = i + 1;
 					x = x->sNode[i + 1];
@@ -162,12 +159,12 @@ int* BpTree::findPath(BpTreeNode* x, float a) {
 				}
 			}
 		}
+		k++;
 	}
 
-	return path;
 }
 
-void BpTree::update(float a, int oldBnum, int newBNum) {
+void BpTree::update(double a, int oldBnum, int newBNum) {
 	int i;
 	BpTreeNode* x = root;
 
@@ -177,12 +174,12 @@ void BpTree::update(float a, int oldBnum, int newBNum) {
 		while (x->leaf == false) {						// find leafnode
 			if (a < x->key[0])
 				x = x->sNode[0];
-			else if (a >= x->key[x->count])
-				x = x->sNode[x->count + 1];
+			else if (a >= x->key[x->count - 1])
+				x = x->sNode[x->count];
 			else {
-				for (i = 0; i < (x->count); i++) {
+				for (i = 0; i < (x->count - 1); i++) {
 					if ((a >= x->key[i]) && (a < x->key[i + 1])) {
-						x = x->sNode[i++];
+						x = x->sNode[i + 1];
 						break;
 					}
 				}
@@ -200,7 +197,7 @@ void BpTree::update(float a, int oldBnum, int newBNum) {
 
 BpTreeNode* BpTree::searchNode(int k) {
 	int i;
-	BpTreeNode *x = root;
+	BpTreeNode* x = root;
 
 	// find fisrt leaf node
 	while (!x->leaf) {
