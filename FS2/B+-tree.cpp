@@ -46,12 +46,12 @@ void BpTree::arrangePath(BpTreeNode* x)
 			for (j = 0; j < i; j++) {
 				nParent = nParent->sNode[path[j]];			
 			}
-
-			for (j = nParent->count; j > path[i] + 1; j--) {
+			nParent->sNode[nParent->count + 1] = nParent->sNode[nParent->count];
+			for (j = nParent->count; j > path[i]; j--) {
 				nParent->key[j] = nParent->key[j - 1];
 				nParent->bNum[j] = nParent->bNum[j - 1];
-				nParent->sNode[j + 1] = nParent->sNode[j];
-				nParent->sNode[j + 1] = nParent->sNode[j - 1];
+				//nParent->sNode[j + 1] = nParent->sNode[j];
+				nParent->sNode[j] = nParent->sNode[j - 1];
 			}
 			nParent->leaf = false;
 			nParent->key[path[i]] = middleKey;
@@ -70,17 +70,19 @@ void BpTree::spiltNode(BpTreeNode*x, BpTreeNode* y) {
 	int i;
 	
 	y->leaf = x->leaf;
+	y->sNode[0] = x->sNode[minNum];
 	y->next = x->next;
-	for (i = minNum; i < maxNum; i++) {
+	for (i = maxNum - 1; i > minNum - 1; i--) {
 			y->key[i - minNum] = x->key[i];
 			y->bNum[i - minNum] = x->bNum[i];
-			y->sNode[i - minNum] = x->sNode[i];
+			y->sNode[i - minNum + 1] = x->sNode[i + 1];
 			x->key[i] = 0;
 			x->bNum[i] = -1;
-			x->sNode[i] = NULL;
+			x->sNode[i + 1] = NULL;
 			x->count--;
 			y->count++;
 	}
+	
 	x->next = y;
 }
 
@@ -121,13 +123,14 @@ void BpTree::insert(double a, int b) {
 					x = x->sNode[0];
 				else if (a >= x->key[x->count - 1])
 					x = x->sNode[x->count];
-				else 
-					for (i = 0; i < x->count - 1; i++) 
+				else {
+					for (i = 0; i < x->count - 1; i++) {
 						if ((a >= x->key[i]) && (a < x->key[i + 1])) {
-							path[j++] = i + 1;
 							x = x->sNode[i + 1];
 							break;
 						}
+					}
+				}
 			}
 			x->key[x->count] = a;
 			x->bNum[x->count] = b;

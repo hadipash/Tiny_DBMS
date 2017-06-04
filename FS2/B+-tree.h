@@ -20,17 +20,14 @@ struct BpTreeNode {
 		count = 0;
 		leaf = true;
 		next = NULL;
-		sNode[maxNum + 1] = NULL;
+		sNode[maxNum] = NULL;
 		for (i = 0; i < maxNum; i++) {
 			sNode[i] = NULL;
 			key[i] = 0;
 			bNum[i] = -1;
 		}
 	}
-	~BpTreeNode() { 
-		delete bNum;
-		delete key;
-	}
+	~BpTreeNode() { 	}
 	
 	void sort() {
 		int i, j, bTemp;
